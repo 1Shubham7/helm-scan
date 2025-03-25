@@ -18,6 +18,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	}))
 
 	r.GET("/", s.HelloWorldHandler)
+	r.POST("/helm", )
 
 	return r
 }

@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"helm/internal/server"
+	"github.com/1shubham7/helm-scan/internal/server"
 )
 
 func gracefulShutdown(apiServer *http.Server, done chan bool) {

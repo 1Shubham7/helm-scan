@@ -1,4 +1,4 @@
-module helm
+module github.com/1shubham7/helm-scan
 
 go 1.23.1
 
