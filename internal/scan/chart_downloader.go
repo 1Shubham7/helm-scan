@@ -59,11 +59,10 @@ func downloadOCIChart(chartURL, tempDir string) (string, error) {
 
 func downloadHTTPChart(chartURL, tempDir string) (string, error){
 
-	chartPath := "."
 	cmd := exec.Command("helm", "pull", 
 		chartURL,       // Chart reference (e.g., oci://registry-1.docker.io/bitnamicharts/airflow)
 		"--untar",      // Automatically untar the chart
-		"--destination", chartPath, // Extract to current directory
+		"--destination", tempDir, // Extract to current directory
 	)
 
 	cmd.Stdout = os.Stdout
@@ -74,5 +73,5 @@ func downloadHTTPChart(chartURL, tempDir string) (string, error){
 		return "", fmt.Errorf("failed to pull Helm chart: %v", err)
 	}
 
-	return chartPath, nil
+	return tempDir, nil
 }

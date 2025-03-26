@@ -11,6 +11,7 @@ after completion
 I am using go-blueprint for creating the project structure. you can create go structure from here - https://github.com/golang-standards/project-layout
 
 
+we will try using helm go sdk in cli but here we simply did it using helm pull command
 
 
 

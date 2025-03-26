@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/1shubham7/helm-scan/internal/models"
 	"github.com/1shubham7/helm-scan/internal/scan"
@@ -67,6 +68,11 @@ func ScanChart(req scanRequest) ([]models.ImageInfo, error){
 		return nil, err
 	}
 
+	defer os.RemoveAll(chartPath)
+
 	respImages, err := scan.DiscoverImages(chartPath)
+	if err != nil {
+		return nil, err
+	}
 	return respImages, err
 }

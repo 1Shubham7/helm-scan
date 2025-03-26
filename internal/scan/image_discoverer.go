@@ -1,6 +1,7 @@
 package scan
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -9,12 +10,13 @@ import (
 	"strings"
 
 	"github.com/1shubham7/helm-scan/internal/models"
+	"github.com/docker/docker/client"
 )
 
 func DiscoverImages(extractedChartPath string) ([]models.ImageInfo, error) {
 
 	patterns := []*regexp.Regexp{
-		// Matches: image: "nginx:1.21"  OR  image: postgres:13  
+	// Matches: image: "nginx:1.21"  OR  image: postgres:13  
 	// Explanation:
 	// - `image:\s*` → Matches "image:" followed by any spaces.
 	// - `["']?` → Optionally matches a single or double quote around the image name.
@@ -86,7 +88,7 @@ func DiscoverImages(extractedChartPath string) ([]models.ImageInfo, error) {
 
 
 // normalizeImage standardizes image references
-func normalizeImage(rawImage string) models.ImageInfo {
+func normalizeImage(rawImage string) (models.ImageInfo) {
 	// Default tag if not specified
 	defaultTag := "latest"
 
@@ -107,9 +109,37 @@ func normalizeImage(rawImage string) models.ImageInfo {
 		repository = strings.Join(strings.Split(name, "/")[:len(strings.Split(name, "/"))-1], "/")
 	}
 
+	// rawImage is image + tag
+	size, _ := getSizeAndLayers(rawImage)	
+
 	return models.ImageInfo{
 		Name:       name,
 		Repository: repository,
 		Tag:        tag,
+		Size: size,
+		// Layers: layers,
 	}
+}
+
+func getSizeAndLayers(imageWithTag string) (size int64, err error) {
+	ctx := context.Background()
+	// my Docker daemon supports 1.47 at most, and client was of latest 1.48 version.
+	// cli, err := client.NewClientWithOpts(client.FromEnv)
+
+	// this give client highest API version that both the client and daemon support.
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation()) 
+	if err != nil {
+		return 0, err
+	}
+	defer cli.Close()
+
+	inspect, err := cli.ImageInspect(ctx, imageWithTag)
+	if err != nil {
+		return 0, err
+	}
+
+	size = inspect.Size
+	// layers = len(inspect.RootFS.Layers)
+
+	return size, nil
 }
