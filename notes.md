@@ -16,7 +16,14 @@ we will try using helm go sdk in cli but here we simply did it using helm pull c
 
 
 
+This curl will work in powershell - 
 
+$body = '{\"chartURL\":\"oci://registry-1.docker.io/bitnamicharts/redis\"}'
+>> curl.exe -X POST http://localhost:8080/scan -H "Content-Type: application/json" -d "$body"
+
+
+
+docker exec helm-scan curl -X POST http://localhost:8080/your-endpoint  -d '{"chartURL": "oci://registry-1.docker.io/bitnamicharts/redis"}'
 
 
 

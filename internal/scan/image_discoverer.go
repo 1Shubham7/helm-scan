@@ -86,7 +86,6 @@ func DiscoverImages(extractedChartPath string) ([]models.ImageInfo, error) {
 	return respImages, nil
 }
 
-
 // normalizeImage standardizes image references
 func normalizeImage(rawImage string) (models.ImageInfo) {
 	// Default tag if not specified
