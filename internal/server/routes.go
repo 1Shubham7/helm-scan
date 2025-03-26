@@ -20,7 +20,6 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	r.GET("/", s.HelloWorldHandler)
 	r.POST("/scan", api.ChartScanHandler)
-	r.GET("/info", api.ImageDetailsHandler)
 
 	return r
 }

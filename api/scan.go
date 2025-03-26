@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/1shubham7/helm-scan/internal/models"
+	"github.com/1shubham7/helm-scan/internal/scan"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
@@ -47,7 +48,7 @@ func ChartScanHandler(c *gin.Context){
 		return
 	}
 
-	images, err := ScanChart(scanRequest)
+	_, err = ScanChart(req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to scan",
@@ -56,6 +57,11 @@ func ChartScanHandler(c *gin.Context){
 	}
 
 	c.JSON(http.StatusOK, ScanResponse{
-		Images: images,
+		// Images: images,
 	})
+}
+
+func ScanChart(req scanRequest) (string, error){
+	a, err := scan.Download(req.ChartURL)
+	return a, err
 }
