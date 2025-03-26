@@ -5,14 +5,12 @@ import (
     // "log"
     "os"
     "os/exec"
-    "path/filepath"
-    "strings"
 
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/cli"
 	// "helm.sh/helm/v3/pkg/downloader"
 	// "helm.sh/helm/v3/pkg/getter"
-	"helm.sh/helm/v3/pkg/registry"
+	// "helm.sh/helm/v3/pkg/registry"
 )
 
 func Download(chartURL string) (string, error) {
@@ -28,9 +26,9 @@ func Download(chartURL string) (string, error) {
 		return "", fmt.Errorf("failed to create temp directory: %w", err)
 	}
 
-	if registry.IsOCI(chartURL) {
-		return downloadOCIChart(chartURL, tempDir)
-	}
+	// if registry.IsOCI(chartURL) {
+		// return downloadOCIChart(chartURL, tempDir)
+	// }
 
 	return downloadHTTPChart(chartURL, tempDir)
 }
@@ -60,27 +58,21 @@ func downloadOCIChart(chartURL, tempDir string) (string, error) {
 }
 
 func downloadHTTPChart(chartURL, tempDir string) (string, error){
-    // Construct the Helm pull command
-    cmd := exec.Command("helm", "pull", chartURL, "--destination", tempDir)
-    
-    // Run the command
-    _, err := cmd.CombinedOutput()
-    if err != nil {
-        return "", fmt.Errorf("failed to download charttt: %w", err)
-    }
 
-    // Get the filename of the pulled chart
-    files, err := os.ReadDir(tempDir)
-    if err != nil {
-        return "", fmt.Errorf("failed to read temporary directory: %w", err)
-    }
+	chartPath := "."
+	cmd := exec.Command("helm", "pull", 
+		chartURL,       // Chart reference (e.g., oci://registry-1.docker.io/bitnamicharts/airflow)
+		"--untar",      // Automatically untar the chart
+		"--destination", chartPath, // Extract to current directory
+	)
 
-    // Find the first .tgz file
-    for _, file := range files {
-        if strings.HasSuffix(file.Name(), ".tgz") {
-            return filepath.Join(tempDir, file.Name()), nil
-        }
-    }
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
-    return "", fmt.Errorf("no chart file found after download")
+	// Run the command
+	if err := cmd.Run(); err != nil {
+		return "", fmt.Errorf("failed to pull Helm chart: %v", err)
+	}
+
+	return chartPath, nil
 }

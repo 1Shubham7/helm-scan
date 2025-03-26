@@ -48,7 +48,7 @@ func ChartScanHandler(c *gin.Context){
 		return
 	}
 
-	_, err = ScanChart(req)
+	respImages, err := ScanChart(req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to scan",
@@ -57,11 +57,16 @@ func ChartScanHandler(c *gin.Context){
 	}
 
 	c.JSON(http.StatusOK, ScanResponse{
-		// Images: images,
+		Images: respImages,
 	})
 }
 
-func ScanChart(req scanRequest) (string, error){
-	a, err := scan.Download(req.ChartURL)
-	return a, err
+func ScanChart(req scanRequest) ([]models.ImageInfo, error){
+	chartPath, err := scan.Download(req.ChartURL)
+	if err != nil {
+		return nil, err
+	}
+
+	respImages, err := scan.DiscoverImages(chartPath)
+	return respImages, err
 }
