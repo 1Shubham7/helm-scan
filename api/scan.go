@@ -20,13 +20,13 @@ type ScanResponse struct {
 
 var validate = validator.New()
 
-func ChartScanHandler(c *gin.Context){
+func ChartScanHandler(c *gin.Context) {
 	var req scanRequest
 
 	err := c.BindJSON(&req)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Request is invalid",
+			"error":   "Request is invalid",
 			"details": err.Error(),
 		})
 		return
@@ -35,7 +35,7 @@ func ChartScanHandler(c *gin.Context){
 	err = validate.Struct(req)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Request is not valid",
+			"error":   "Request is not valid",
 			"details": err.Error(),
 		})
 	}
@@ -43,7 +43,7 @@ func ChartScanHandler(c *gin.Context){
 	// validate the chart link
 	if req.ChartURL == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Request is invalid",
+			"error":   "Request is invalid",
 			"details": "Chart URL is required",
 		})
 		return
@@ -52,7 +52,7 @@ func ChartScanHandler(c *gin.Context){
 	respImages, err := ScanChart(req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to scan",
+			"error":   "Failed to scan",
 			"details": err.Error(),
 		})
 	}
@@ -62,7 +62,7 @@ func ChartScanHandler(c *gin.Context){
 	})
 }
 
-func ScanChart(req scanRequest) ([]models.ImageInfo, error){
+func ScanChart(req scanRequest) ([]models.ImageInfo, error) {
 	chartPath, err := scan.Download(req.ChartURL)
 	if err != nil {
 		return nil, err

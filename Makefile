@@ -9,6 +9,9 @@ build:
 	
 	@go build -o main.exe cmd/api/main.go
 
+hehe:
+	go fmt ./...
+
 # Run the application
 run:
 	@go run cmd/api/main.go
@@ -35,4 +38,4 @@ watch:
 		Write-Output 'Watching...'; \
 	}"
 
-.PHONY: all build run test clean watch
+.PHONY: all build run test clean watch hehe

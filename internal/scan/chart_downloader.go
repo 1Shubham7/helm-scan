@@ -2,15 +2,8 @@ package scan
 
 import (
 	"fmt"
-    // "log"
-    "os"
-    "os/exec"
-
-	"helm.sh/helm/v3/pkg/action"
-	"helm.sh/helm/v3/pkg/cli"
-	// "helm.sh/helm/v3/pkg/downloader"
-	// "helm.sh/helm/v3/pkg/getter"
-	// "helm.sh/helm/v3/pkg/registry"
+	"os"
+	"os/exec"
 )
 
 func Download(chartURL string) (string, error) {
@@ -26,42 +19,14 @@ func Download(chartURL string) (string, error) {
 		return "", fmt.Errorf("failed to create temp directory: %w", err)
 	}
 
-	// if registry.IsOCI(chartURL) {
-		// return downloadOCIChart(chartURL, tempDir)
-	// }
-
-	return downloadHTTPChart(chartURL, tempDir)
+	return downloadChart(chartURL, tempDir)
 }
 
-func downloadOCIChart(chartURL, tempDir string) (string, error) {
-	actionConfig := new(action.Configuration)
-	settings := cli.New()
+func downloadChart(chartURL, tempDir string) (string, error) {
 
-	if err := actionConfig.Init(settings.RESTClientGetter(), "", "", nil); err != nil {
-		return "", fmt.Errorf("failed to initialize Helm action config: %w", err)
-	}
-
-	// Pull the OCI chart
-	pullAction := action.NewPull()
-	pullAction.Settings = settings
-	pullAction.DestDir = tempDir
-	pullAction.Untar = true
-	pullAction.UntarDir = tempDir
-
-	// Pull the chart
-	chartPath, err := pullAction.Run(chartURL)
-	if err != nil {
-		return "", fmt.Errorf("failed to pull OCI chart: %w", err)
-	}
-
-	return chartPath, nil
-}
-
-func downloadHTTPChart(chartURL, tempDir string) (string, error){
-
-	cmd := exec.Command("helm", "pull", 
-		chartURL,       // Chart reference (e.g., oci://registry-1.docker.io/bitnamicharts/airflow)
-		"--untar",      // Automatically untar the chart
+	cmd := exec.Command("helm", "pull",
+		chartURL,                 // Chart reference (e.g., oci://registry-1.docker.io/bitnamicharts/airflow)
+		"--untar",                // Automatically untar the chart
 		"--destination", tempDir, // Extract to current directory
 	)
 
