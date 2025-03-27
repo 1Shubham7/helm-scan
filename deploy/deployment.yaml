@@ -33,18 +33,13 @@ spec:
             memory: 256Mi
         livenessProbe:
           httpGet:
-            path: /healthz
+            path: /
             port: 8080
           initialDelaySeconds: 15
           periodSeconds: 20
         readinessProbe:
           httpGet:
-            path: /healthz
+            path: /
             port: 8080
           initialDelaySeconds: 10
           periodSeconds: 15
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          runAsNonRoot: true
-          runAsUser: 1000

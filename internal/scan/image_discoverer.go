@@ -1,18 +1,25 @@
 package scan
 
 import (
-	// "context"
+	"context"
 	"fmt"
+	"io"
+
+	// "io"
 	"io/ioutil"
 	"os"
-	"os/exec"
+
+	// "os/exec"
 	"path/filepath"
 	"regexp"
-	"strconv"
+
+	// "strconv"
 	"strings"
 
 	"github.com/1shubham7/helm-scan/internal/models"
-	// "github.com/docker/docker/client"
+	// "github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/client"
 )
 
 func DiscoverImages(extractedChartPath string) ([]models.ImageInfo, error) {
@@ -125,72 +132,94 @@ func normalizeImage(rawImage string) models.ImageInfo {
 	}
 }
 
-func getSizeAndLayers(imageWithTag string) (size int64, layers int, err error) {
-	size = 0
-	layers = 0
-
-	// Run docker inspect to get detailed image information
-	cmd := exec.Command("docker", "inspect",
-		"--format={{.Size}}\t{{len .RootFS.Layers}}",
-		imageWithTag)
-
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		fmt.Printf("error executing docker command: %v\n", err)
-		return 0, 0, fmt.Errorf("error executing docker command: %w", err)
-	}
-
-	// Trim any whitespace
-	outputStr := strings.TrimSpace(string(output))
-
-	// Split the output into size and layers
-	parts := strings.Split(outputStr, "\t")
-	if len(parts) < 2 {
-		return 0, 0, fmt.Errorf("unexpected output format for image %s", imageWithTag)
-	}
-
-	// Parse size
-	sizeVal, err := strconv.ParseInt(parts[0], 10, 64)
-	if err != nil {
-		return 0, 0, fmt.Errorf("failed to parse size for image %s: %w", imageWithTag, err)
-	}
-	size = sizeVal
-
-	// Parse layers
-	layersVal, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return 0, 0, fmt.Errorf("failed to parse layers for image %s: %w", imageWithTag, err)
-	}
-	layers = layersVal
-
-	return size, layers, nil
-}
-
 // func getSizeAndLayers(imageWithTag string) (size int64, layers int, err error) {
-// 	ctx := context.Background()
-// 	// my Docker daemon supports 1.47 at most, and client was of latest 1.48 version.
-// 	// cli, err := client.NewClientWithOpts(client.FromEnv)
+// 	size = 0
+// 	layers = 0
 
-// 	// this give client highest API version that both the client and daemon support.
-// 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-// 	if err != nil {
-// 		return 0, 0, fmt.Errorf("failed to create Docker client: %w", err)
-// 	}
-// 	defer cli.Close()
+// 	// Run docker inspect to get detailed image information
+// 	cmd := exec.Command("docker", "inspect",
+// 		"--format='{{.Size}}\t{{len .RootFS.Layers}}'",
+// 		imageWithTag)
 
-// 	inspect, err := cli.ImageInspect(ctx, imageWithTag)
+// 	output, err := cmd.CombinedOutput()
 // 	if err != nil {
-// 		fmt.Println("one", imageWithTag)
-// 		return 0, 0, fmt.Errorf("failed to inspect image %s: %w", imageWithTag, err)
+// 		fmt.Printf("error executing docker command: %v\n", err)
+// 		return 0, 0, fmt.Errorf("error executing docker command: %w", err)
 // 	}
 
-// 	size = inspect.Size
-// 	layers = len(inspect.RootFS.Layers)
+// 	// Trim any whitespace
+// 	outputStr := strings.TrimSpace(string(output))
 
-// 	fmt.Println(inspect.RootFS.Layers)
+// 	// Split the output into size and layers
+// 	parts := strings.Split(outputStr, "\t")
+// 	if len(parts) < 2 {
+// 		return 0, 0, fmt.Errorf("unexpected output format for image %s", imageWithTag)
+// 	}
+
+// 	// Parse size
+// 	sizeVal, err := strconv.ParseInt(parts[0], 10, 64)
+// 	if err != nil {
+// 		return 0, 0, fmt.Errorf("failed to parse size for image %s: %w", imageWithTag, err)
+// 	}
+// 	size = sizeVal
+
+// 	// Parse layers
+// 	layersVal, err := strconv.Atoi(parts[1])
+// 	if err != nil {
+// 		return 0, 0, fmt.Errorf("failed to parse layers for image %s: %w", imageWithTag, err)
+// 	}
+// 	layers = layersVal
 
 // 	return size, layers, nil
 // }
+
+func getSizeAndLayers(imageWithTag string) (size int64, layers int, err error) {
+	ctx := context.Background()
+	// my Docker daemon supports 1.47 at most, and client was of latest 1.48 version.
+	// cli, err := client.NewClientWithOpts(client.FromEnv)
+
+	// this give client highest API version that both the client and daemon support.
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to create Docker client: %w", err)
+	}
+	defer cli.Close()
+
+	imageCreateOptions := image.CreateOptions{}
+	createReader, err := cli.ImageCreate(ctx, imageWithTag, imageCreateOptions)
+	if err != nil {
+		fmt.Println("one", err)
+		return 0, 0, fmt.Errorf("failed to create image %s: %w", imageWithTag, err)
+	}
+	// Ensure we read and close the reader
+	if createReader != nil {
+		io.Copy(io.Discard, createReader)
+		createReader.Close()
+	}
+
+	// Now inspect the image to get size and layers
+	inspect, err := cli.ImageInspect(ctx, imageWithTag)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to inspect image %s: %w", imageWithTag, err)
+	}
+
+	size = inspect.Size
+	layers = len(inspect.RootFS.Layers)
+
+	fmt.Printf("Image %s - Layers: %d, Size: %d bytes\n", imageWithTag, layers, size)
+
+	// Delete the image after usage
+	_, err = cli.ImageRemove(ctx, imageWithTag, image.RemoveOptions{
+		Force:         true,
+		PruneChildren: true,
+	})
+	if err != nil {
+		fmt.Printf("Warning: failed to remove image %s: %v\n", imageWithTag, err)
+	}
+	fmt.Printf("image removed %s\n", imageWithTag)
+
+	return size, layers, nil
+}
 
 // isValidImageReference checks if the image reference is potentially valid
 func isValidImageReference(image string) bool {

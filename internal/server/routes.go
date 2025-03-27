@@ -4,24 +4,20 @@ import (
 	"net/http"
 
 	api "github.com/1shubham7/helm-scan/api"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
+	"github.com/1shubham7/helm-scan/middleware"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
-	r := gin.Default()
+	router := gin.Default()
+	
+	router.Use(middleware.PerClientTokenBucket())
 
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
-		AllowHeaders:     []string{"Accept", "Authorization", "Content-Type"},
-		AllowCredentials: true, // Enable cookies/auth
-	}))
+	router.GET("/", s.HelloWorldHandler)
+	router.POST("/scan", api.ChartScanHandler)
 
-	r.GET("/", s.HelloWorldHandler)
-	r.POST("/scan", api.ChartScanHandler)
-
-	return r
+	return router
 }
 
 func (s *Server) HelloWorldHandler(c *gin.Context) {
