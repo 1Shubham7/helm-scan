@@ -136,7 +136,8 @@ func getSizeAndLayers(imageWithTag string) (size int64, layers int, err error) {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		fmt.Println("galati")
+		fmt.Printf("error executing docker command: %v\n", err)
+		return 0, 0, fmt.Errorf("error executing docker command: %w", err)
 	}
 
 	// Trim any whitespace

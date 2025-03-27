@@ -12,7 +12,7 @@ COPY . .
 RUN go build -o helm-scan ./cmd/helm-scan/main.go
 
 # Final stage
-FROM docker:24.0.6-dind
+FROM alpine:latest
 
 RUN apk add --no-cache ca-certificates curl bash
 
@@ -27,10 +27,6 @@ WORKDIR /app
 
 COPY --from=builder /app/helm-scan .
 
-# Copy the startup script
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
 EXPOSE 8080
 
-ENTRYPOINT ["/entrypoint.sh"]
+CMD ["/app/helm-scan"]
