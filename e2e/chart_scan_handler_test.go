@@ -15,7 +15,7 @@ type ScanRequest struct {
 }
 
 type ScanResponse struct {
-	Images []struct {} `json:"images"`
+	Images []struct{} `json:"images"`
 }
 
 var _ = Describe("Chart Scan API", func() {

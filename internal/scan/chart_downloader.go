@@ -30,7 +30,7 @@ func Download(chartURL string) (string, error) {
 func pullChart(chartURL, tempDir string) (string, error) {
 
 	cmd := exec.Command("helm", "pull",
-		chartURL,                 
+		chartURL,
 		"--untar",
 		"--destination", tempDir,
 	)
@@ -47,51 +47,51 @@ func pullChart(chartURL, tempDir string) (string, error) {
 }
 
 func validateChartURL(chartURL string) error {
-    // Check if URL is empty
-    if chartURL == "" {
-        return fmt.Errorf("chart URL cannot be empty")
-    }
+	// Check if URL is empty
+	if chartURL == "" {
+		return fmt.Errorf("chart URL cannot be empty")
+	}
 
-    // Check for supported URL prefixes
-    supportedPrefixes := []string{
-        "oci://",
-        "https://",
-        "http://",
-        "file://",
-    }
-    
-    hasValidPrefix := false
-    for _, prefix := range supportedPrefixes {
-        if strings.HasPrefix(chartURL, prefix) {
-            hasValidPrefix = true
-            break
-        }
-    }
+	// Check for supported URL prefixes
+	supportedPrefixes := []string{
+		"oci://",
+		"https://",
+		"http://",
+		"file://",
+	}
 
-    if !hasValidPrefix {
-        return fmt.Errorf("invalid chart URL prefix. Supported prefixes: %v", supportedPrefixes)
-    }
+	hasValidPrefix := false
+	for _, prefix := range supportedPrefixes {
+		if strings.HasPrefix(chartURL, prefix) {
+			hasValidPrefix = true
+			break
+		}
+	}
 
-    // For OCI URLs, do additional validation
-    if strings.HasPrefix(chartURL, "oci://") {
-        // Validate OCI registry URL structure
-        registryParts := strings.Split(strings.TrimPrefix(chartURL, "oci://"), "/")
-        if len(registryParts) < 2 {
-            return fmt.Errorf("invalid OCI chart URL format. Expected: oci://registry/repository/chart")
-        }
-    }
+	if !hasValidPrefix {
+		return fmt.Errorf("invalid chart URL prefix. Supported prefixes: %v", supportedPrefixes)
+	}
 
-    // Optional: Parse the URL to do more detailed validation
-    parsedURL, err := url.Parse(chartURL)
-    if err != nil {
-        return fmt.Errorf("failed to parse URL: %w", err)
-    }
+	// For OCI URLs, do additional validation
+	if strings.HasPrefix(chartURL, "oci://") {
+		// Validate OCI registry URL structure
+		registryParts := strings.Split(strings.TrimPrefix(chartURL, "oci://"), "/")
+		if len(registryParts) < 2 {
+			return fmt.Errorf("invalid OCI chart URL format. Expected: oci://registry/repository/chart")
+		}
+	}
 
-    // Additional checks can be added based on your specific requirements
-    // For example, checking against a whitelist of known registries
-    if parsedURL.Scheme == "" {
-        return fmt.Errorf("URL must have a valid scheme")
-    }
+	// Optional: Parse the URL to do more detailed validation
+	parsedURL, err := url.Parse(chartURL)
+	if err != nil {
+		return fmt.Errorf("failed to parse URL: %w", err)
+	}
 
-    return nil
+	// Additional checks can be added based on your specific requirements
+	// For example, checking against a whitelist of known registries
+	if parsedURL.Scheme == "" {
+		return fmt.Errorf("URL must have a valid scheme")
+	}
+
+	return nil
 }

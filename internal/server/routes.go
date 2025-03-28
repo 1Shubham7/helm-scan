@@ -11,7 +11,7 @@ import (
 
 func (s *Server) RegisterRoutes() http.Handler {
 	router := gin.Default()
-	
+
 	router.Use(middleware.PerClientTokenBucket())
 
 	router.GET("/", s.HelloWorldHandler)
