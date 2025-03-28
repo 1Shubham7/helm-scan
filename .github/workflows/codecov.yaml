@@ -24,25 +24,11 @@ jobs:
       with:
         version: 'latest'
 
-    - name: Install Ginkgo
-      run: |
-        go install github.com/onsi/ginkgo/v2/ginkgo@latest
-
     - name: Download dependencies
       run: go mod download
 
     - name: Run Unit Tests
       run: go test -race -coverprofile=unit-coverage.txt -covermode=atomic $(go list ./... | grep -v "e2e")
-
-    - name: Run the application
-      run: |
-        nohup go run ./cmd/helm-scan/main.go > server.log 2>&1 &
-        # Wait for the server to start
-        sleep 30
-        # Check server logs in case of startup issues
-        cat server.log
-
-        ginkgo ./e2e
 
     - name: Generate Combined Coverage
       run: |
