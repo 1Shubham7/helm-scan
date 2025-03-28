@@ -36,13 +36,16 @@ jobs:
 
     - name: Run the application
       run: |
-        go run ./cmd/helm-scan/main.go &
-        sleep 3600
-
-    - name: Run E2E Tests with Ginkgo
-      run: |        
-        # Run Ginkgo E2E tests
-        ginkgo ./e2e
+        go run ./cmd/helm-scan/main.go & 
+        SERVER_PID=$!
+        sleep 30
+        
+        # Run tests
+        go test -tags=e2e ./...
+        ginkgo run ./e2e
+        
+        # Kill the server after tests
+        kill $SERVER_PID
 
     - name: Generate Combined Coverage
       run: |
