@@ -6,7 +6,6 @@ import (
 	"io"
 
 	// "io"
-	"io/ioutil"
 	"os"
 
 	// "os/exec"
@@ -59,7 +58,7 @@ func DiscoverImages(extractedChartPath string) ([]models.ImageInfo, error) {
 			return nil
 		}
 
-		content, err := ioutil.ReadFile(path)
+		content, err := os.ReadFile(path)
 		if err != nil {
 			return err
 		}

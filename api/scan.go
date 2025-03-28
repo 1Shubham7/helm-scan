@@ -32,14 +32,6 @@ func ChartScanHandler(c *gin.Context) {
 		return
 	}
 
-	err = validate.Struct(req)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "Request is not valid",
-			"details": err.Error(),
-		})
-	}
-
 	// validate the chart link
 	if req.ChartURL == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -47,6 +39,14 @@ func ChartScanHandler(c *gin.Context) {
 			"details": "Chart URL is required",
 		})
 		return
+	}
+
+	err = validate.Struct(req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Request is not valid",
+			"details": err.Error(),
+		})
 	}
 
 	respImages, err := ScanChart(req)
