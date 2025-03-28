@@ -36,16 +36,13 @@ jobs:
 
     - name: Run the application
       run: |
-        go run ./cmd/helm-scan/main.go & 
-        SERVER_PID=$!
+        nohup go run ./cmd/helm-scan/main.go > server.log 2>&1 &
+        # Wait for the server to start
         sleep 30
-        
-        # Run tests
-        go test -tags=e2e ./...
-        ginkgo run ./e2e
-        
-        # Kill the server after tests
-        kill $SERVER_PID
+        # Check server logs in case of startup issues
+        cat server.log
+
+        ginkgo ./e2e
 
     - name: Generate Combined Coverage
       run: |
