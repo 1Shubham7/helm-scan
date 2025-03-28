@@ -31,13 +31,13 @@ jobs:
     - name: Download dependencies
       run: go mod download
 
+    - name: Run Unit Tests
+      run: go test -race -coverprofile=unit-coverage.txt -covermode=atomic $(go list ./... | grep -v "e2e")
+
     - name: Run the application
       run: |
         go run ./cmd/helm-scan/main.go &
-        sleep 120
-
-    - name: Run Unit Tests
-      run: go test -race -coverprofile=unit-coverage.txt -covermode=atomic $(go list ./... | grep -v "e2e")
+        sleep 3600
 
     - name: Run E2E Tests with Ginkgo
       run: |        
