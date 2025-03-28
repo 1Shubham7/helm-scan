@@ -38,4 +38,7 @@ watch:
 		Write-Output 'Watching...'; \
 	}"
 
-.PHONY: all build run test clean watch hehe
+make e2e:
+	ginkgo ./e2e
+
+.PHONY: all build run test clean watch hehe e2e
